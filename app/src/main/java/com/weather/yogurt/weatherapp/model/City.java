@@ -4,20 +4,9 @@ package com.weather.yogurt.weatherapp.model;
  * Created by Yogurt on 5/5/16.
  */
 public class City {
-    private int cityId;
     private String cityName;
-    private String cityCode;
-    private int provinceId;
-    private String cityPostCode;
-    private String cityTelAreaCode;
+    private String provinceName;
 
-    public int getCityId() {
-        return cityId;
-    }
-
-    public void setCityId(int cityId) {
-        this.cityId = cityId;
-    }
 
     public String getCityName() {
         return cityName;
@@ -27,36 +16,13 @@ public class City {
         this.cityName = cityName;
     }
 
-    public String getCityCode() {
-        return cityCode;
+    public String getProvinceName() {
+        return provinceName;
     }
 
-    public void setCityCode(String cityCode) {
-        this.cityCode = cityCode;
+    public void setProvinceName(String provinceName) {
+        this.provinceName = provinceName;
     }
 
-    public int getProvinceId() {
-        return provinceId;
-    }
-
-    public void setProvinceId(int provinceId) {
-        this.provinceId = provinceId;
-    }
-
-    public String getCityPostCode() {
-        return cityPostCode;
-    }
-
-    public void setCityPostCode(String cityPostCode) {
-        this.cityPostCode = cityPostCode;
-    }
-
-    public String getCityTelAreaCode() {
-        return cityTelAreaCode;
-    }
-
-    public void setCityTelAreaCode(String cityTelAreaCode) {
-        this.cityTelAreaCode = cityTelAreaCode;
-    }
 
 }
