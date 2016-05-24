@@ -1,8 +1,5 @@
 package com.weather.yogurt.weatherapp.util;
 
-import android.os.Handler;
-import android.os.Message;
-
 import com.weather.yogurt.weatherapp.database.WeatherDB;
 
 import java.io.BufferedReader;
@@ -16,14 +13,6 @@ import java.net.URL;
  */
 public class HttpUtil {
     public static void sendHttpRequest(final String address, final HttpCallbackListener listener,final WeatherDB weatherDB){
-        final Handler handler=new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                if (msg.what==1){
-                    Utility.handleXMLResponse(weatherDB,msg.obj.toString());
-                }
-            }
-        };
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -34,18 +23,18 @@ public class HttpUtil {
                     connection.setReadTimeout(8000);
                     connection.setConnectTimeout(8000);
                     connection.setRequestMethod("GET");
-
+                    if (!address.equals("http://10.13.4.198/allchina.xml")){
+                        connection.setRequestProperty("apikey","dc4d191ee8f9eb877e74ebf2643958cc");
+                    }
                     InputStream in=connection.getInputStream();
                     BufferedReader reader=new BufferedReader(new InputStreamReader(in, "UTF-8"));
                     String line;
                     final StringBuilder response=new StringBuilder();
                     while ((line=reader.readLine())!=null){
                         response.append(line);
+                        response.append("\r\n");
                     }
-                    Message msg=new Message();
-                    msg.what=1;
-                    msg.obj=response;
-                    handler.sendMessage(msg);
+                    reader.close();
                     if (listener!=null){
                         //回调onFinish方法
                         listener.onFinish(response.toString());
@@ -63,4 +52,5 @@ public class HttpUtil {
             }
         }).start();
     }
+
 }

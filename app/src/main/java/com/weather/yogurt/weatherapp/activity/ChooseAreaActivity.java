@@ -2,8 +2,10 @@ package com.weather.yogurt.weatherapp.activity;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -19,6 +21,7 @@ import com.weather.yogurt.weatherapp.model.Country;
 import com.weather.yogurt.weatherapp.model.Province;
 import com.weather.yogurt.weatherapp.util.HttpCallbackListener;
 import com.weather.yogurt.weatherapp.util.HttpUtil;
+import com.weather.yogurt.weatherapp.util.Utility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,11 +55,18 @@ public class ChooseAreaActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getBoolean("city_selected",false)){
+            Intent intent=new Intent(this,WeatherActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.choose_area);
         listView= (ListView) findViewById(R.id.list_view);
         titleText = (TextView) findViewById(R.id.title_text);
-        adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,dataList);
+        adapter=new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,dataList);
         listView.setAdapter(adapter);
 
         weatherDB=WeatherDB.getInstance(this);
@@ -76,6 +86,13 @@ public class ChooseAreaActivity extends Activity {
                }else if (currentLevel==LEVEL_CITY){
                    selectedCity=cityList.get(position);
                    queryCountries();
+               }else if (currentLevel==LEVEL_COUNTRY){
+                   Intent intent=new Intent(ChooseAreaActivity.this,WeatherActivity.class);
+                   intent.putExtra("country_code",countryList.get(position).getCountryCode());
+                   intent.putExtra("country_name_chinese",countryList.get(position).getCountryNameChinese());
+                   intent.putExtra("country_name_pinyin",countryList.get(position).getCountryNamePinYin());
+                   startActivity(intent);
+                   finish();
                }
             }
         });
@@ -135,11 +152,11 @@ public class ChooseAreaActivity extends Activity {
     }
 
     private void queryFromServer() {
-        boolean result=false;
+//        boolean result=false;
         HttpCallbackListener listener=new HttpCallbackListener() {
             @Override
             public void onFinish(String result) {
-
+                Utility.handleXMLResponse(weatherDB,result);
             }
 
             @Override
@@ -160,24 +177,22 @@ public class ChooseAreaActivity extends Activity {
             }
         });
         HttpUtil.sendHttpRequest("http://10.13.4.198/allchina.xml",listener,weatherDB);
-        //Log.d("AAA1",response.substring(0,100));
-        Log.d("AAA1", String.valueOf(result));
-        if (result){
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    closeProgressDialog();
-                }
-            });
-        }else {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    closeProgressDialog();
-                    Toast.makeText(ChooseAreaActivity.this,"加载失败",Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
+//        if (result){
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    closeProgressDialog();
+//                }
+//            });
+//        }else {
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    closeProgressDialog();
+//                    Toast.makeText(ChooseAreaActivity.this,"加载失败",Toast.LENGTH_SHORT).show();
+//                }
+//            });
+//        }
 
     }
     /*
@@ -212,6 +227,7 @@ public class ChooseAreaActivity extends Activity {
         }else if (currentLevel==LEVEL_CITY){
             queryProvinces();
         }else if (currentLevel==LEVEL_COUNTRY){
+
             finish();
         }
     }
