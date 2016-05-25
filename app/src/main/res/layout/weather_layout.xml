@@ -31,32 +31,28 @@
     </LinearLayout>
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="15"
             android:id="@+id/scroll_view_detail_weather"
             android:fillViewport="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <ScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:scrollbarAlwaysDrawHorizontalTrack="true">
+            android:orientation="vertical"
+            android:layout_gravity="fill_vertical">
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/hourly_weather_condition"
-                    android:maxLines="2"
                     android:textSize="20sp"/>
-            </ScrollView>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/weather_condition_detail_text"
-                 />
+                android:id="@+id/weather_condition_detail_text" />
         </LinearLayout>
         </ScrollView>
-
+        <include layout="@layout/down"/>
 </LinearLayout>

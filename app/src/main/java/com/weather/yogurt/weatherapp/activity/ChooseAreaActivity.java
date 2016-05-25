@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -52,17 +51,21 @@ public class ChooseAreaActivity extends Activity {
     private City selectedCity;//选中的市
     private int currentLevel;//当前选中级别
 
+    private boolean isFromWeatherActivity;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        isFromWeatherActivity=getIntent().getBooleanExtra("from_weather_activity",false);
+
+
         SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
-        if (prefs.getBoolean("city_selected",false)){
+        if (!isFromWeatherActivity&&prefs.getBoolean("city_selected",false)){
             Intent intent=new Intent(this,WeatherActivity.class);
             startActivity(intent);
             finish();
             return;
         }
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.choose_area);
         listView= (ListView) findViewById(R.id.list_view);
         titleText = (TextView) findViewById(R.id.title_text);
@@ -87,12 +90,19 @@ public class ChooseAreaActivity extends Activity {
                    selectedCity=cityList.get(position);
                    queryCountries();
                }else if (currentLevel==LEVEL_COUNTRY){
-                   Intent intent=new Intent(ChooseAreaActivity.this,WeatherActivity.class);
-                   intent.putExtra("country_code",countryList.get(position).getCountryCode());
-                   intent.putExtra("country_name_chinese",countryList.get(position).getCountryNameChinese());
-                   intent.putExtra("country_name_pinyin",countryList.get(position).getCountryNamePinYin());
-                   startActivity(intent);
-                   finish();
+                   if (!isFromWeatherActivity){
+                       Intent intent=new Intent(ChooseAreaActivity.this,WeatherActivity.class);
+                       intent.putExtra("country_code",countryList.get(position).getCountryCode());
+                       intent.putExtra("country_name_chinese",countryList.get(position).getCountryNameChinese());
+                       intent.putExtra("country_name_pinyin",countryList.get(position).getCountryNamePinYin());
+                       startActivity(intent);
+                       finish();
+                   }else {
+                       Intent intent=new Intent(ChooseAreaActivity.this,WeatherActivity.class);
+                       intent.putExtra("country_name_pinyin",countryList.get(position).getCountryNamePinYin());
+                       setResult(RESULT_OK,intent);
+                       finish();
+                   }
                }
             }
         });
@@ -170,12 +180,12 @@ public class ChooseAreaActivity extends Activity {
                 });
             }
         };
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                showProgressDialog();
-            }
-        });
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                showProgressDialog();
+//            }
+//        });
         HttpUtil.sendHttpRequest("http://10.13.4.198/allchina.xml",listener,weatherDB);
 //        if (result){
 //            runOnUiThread(new Runnable() {

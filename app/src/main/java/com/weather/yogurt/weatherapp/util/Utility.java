@@ -86,6 +86,7 @@ public class Utility {
         JSONArray jsonArray=new JSONArray(JsonResponse.substring(JsonResponse.indexOf("["),JsonResponse.lastIndexOf("]")+1));
         JSONObject jsonObject=jsonArray.getJSONObject(0);
         String status=jsonObject.getString("status");
+        Log.d("status",status);
         if ("ok".equals(status)){
             Basic basic=new Basic();
             JSONObject basicObj=jsonObject.getJSONObject("basic");
@@ -119,26 +120,27 @@ public class Utility {
             now.setWindSpd(windNow.getString("spd"));//风速
 
             Aqi aqi=new Aqi();
-            JSONObject aqiObj=jsonObject.getJSONObject("aqi").getJSONObject("city");
-            if (aqiObj.toString()!=null){
-                if (aqiObj.has("aqi"))
-                aqi.setAqi(aqiObj.getString("aqi"));
-                if (aqiObj.has("co"))
-                aqi.setCo(aqiObj.getString("co"));
-                if (aqiObj.has("no2"))
-                aqi.setNo2(aqiObj.getString("no2"));
-                if (aqiObj.has("o3"))
-                aqi.setO3(aqiObj.getString("o3"));
-                if (aqiObj.has("pm10"))
-                aqi.setPm10(aqiObj.getString("pm10"));
-                if (aqiObj.has("pm25"))
-                aqi.setPm25(aqiObj.getString("pm25"));
-                if (aqiObj.has("qlty"))
-                aqi.setQlty(aqiObj.getString("qlty"));
-                if (aqiObj.has("so2"))
-                aqi.setSo2(aqiObj.getString("so2"));
+            if (jsonObject.has("aqi")) {
+                JSONObject aqiObj = jsonObject.getJSONObject("aqi").getJSONObject("city");
+                if (aqiObj.toString() != null) {
+                    if (aqiObj.has("aqi"))
+                        aqi.setAqi(aqiObj.getString("aqi"));
+                    if (aqiObj.has("co"))
+                        aqi.setCo(aqiObj.getString("co"));
+                    if (aqiObj.has("no2"))
+                        aqi.setNo2(aqiObj.getString("no2"));
+                    if (aqiObj.has("o3"))
+                        aqi.setO3(aqiObj.getString("o3"));
+                    if (aqiObj.has("pm10"))
+                        aqi.setPm10(aqiObj.getString("pm10"));
+                    if (aqiObj.has("pm25"))
+                        aqi.setPm25(aqiObj.getString("pm25"));
+                    if (aqiObj.has("qlty"))
+                        aqi.setQlty(aqiObj.getString("qlty"));
+                    if (aqiObj.has("so2"))
+                        aqi.setSo2(aqiObj.getString("so2"));
+                }
             }
-
 
             DailyForecast[] dailyForecast=new DailyForecast[7];
             JSONArray dailyForecastArr=jsonObject.getJSONArray("daily_forecast");
@@ -176,10 +178,11 @@ public class Utility {
                 JSONObject hourlyForecastObj=hourlyForecastArr.getJSONObject(i);
                 hourlyForecasts[i]=new HourlyForecast();
                 hourlyForecasts[i].setDate(hourlyForecastObj.getString("date"));
-                hourlyForecasts[i].setDate(hourlyForecastObj.getString("hum"));
-                hourlyForecasts[i].setDate(hourlyForecastObj.getString("pop"));
-                hourlyForecasts[i].setDate(hourlyForecastObj.getString("pres"));
-                hourlyForecasts[i].setDate(hourlyForecastObj.getString("tmp"));
+
+                hourlyForecasts[i].setHum(hourlyForecastObj.getString("hum"));
+                hourlyForecasts[i].setPop(hourlyForecastObj.getString("pop"));
+                hourlyForecasts[i].setPres(hourlyForecastObj.getString("pres"));
+                hourlyForecasts[i].setTmp(hourlyForecastObj.getString("tmp"));
 
                 hourlyForecasts[i].setWindDeg(hourlyForecastObj.getJSONObject("wind").getString("deg"));
                 hourlyForecasts[i].setWindDir(hourlyForecastObj.getJSONObject("wind").getString("dir"));
@@ -284,6 +287,7 @@ public class Utility {
             editor.putInt("hourly_length",hourlyForecasts.length);
         for (int i=0;i<hourlyForecasts.length;i++){
             editor.putString("today_date_"+i,hourlyForecasts[i].getDate());
+
             editor.putString("today_hum_"+i,hourlyForecasts[i].getHum());
             editor.putString("today_pop_"+i,hourlyForecasts[i].getPop());
             editor.putString("today_pres_"+i,hourlyForecasts[i].getPres());
