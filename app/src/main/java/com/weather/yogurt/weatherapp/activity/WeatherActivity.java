@@ -84,7 +84,6 @@ public class WeatherActivity extends Activity implements View.OnClickListener{
             }
             int len=cond.length();
             for (int j=0;j<=7-len;j++) {
-                Log.d("1111111111","1111111111111");
                 cond.append("    ");
             }
             sb.append(cond);
