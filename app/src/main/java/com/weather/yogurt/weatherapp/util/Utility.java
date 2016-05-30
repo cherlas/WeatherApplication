@@ -82,11 +82,11 @@ public class Utility {
     /*
         解析和处理服务器返回的天气状况数据
      */
-    public static void handleWeatherConditionResponse(Context context,String JsonResponse) throws JSONException {
+    public static boolean handleWeatherConditionResponse(Context context,String JsonResponse) throws JSONException {
         JSONArray jsonArray=new JSONArray(JsonResponse.substring(JsonResponse.indexOf("["),JsonResponse.lastIndexOf("]")+1));
         JSONObject jsonObject=jsonArray.getJSONObject(0);
         String status=jsonObject.getString("status");
-        Log.d("status",status);
+       // Log.d("status",status);
         if ("ok".equals(status)){
             Basic basic=new Basic();
             JSONObject basicObj=jsonObject.getJSONObject("basic");
@@ -214,9 +214,10 @@ public class Utility {
             suggestion.setUvBrf(suggestionObj.getJSONObject("uv").getString("brf"));//紫外线指数
             suggestion.setUvTxt(suggestionObj.getJSONObject("uv").getString("txt"));
 
-            saveWeatherInfo(context,now,basic,aqi,dailyForecast,hourlyForecasts,suggestion);
+            return saveWeatherInfo(context,now,basic,aqi,dailyForecast,hourlyForecasts,suggestion);
         }else {
             Log.d("Utility","查询错误");
+            return false;
         }
 
     }
@@ -224,7 +225,7 @@ public class Utility {
     /*
         将服务器返回的所有天气信息讯处到SharedPreference文件中
      */
-    public static void saveWeatherInfo(Context context,Now now, Basic basic, Aqi aqi, DailyForecast[] dailyForecast, HourlyForecast[] hourlyForecasts, Suggestion suggestion){
+    public static boolean saveWeatherInfo(Context context,Now now, Basic basic, Aqi aqi, DailyForecast[] dailyForecast, HourlyForecast[] hourlyForecasts, Suggestion suggestion){
         SharedPreferences.Editor editor= PreferenceManager.getDefaultSharedPreferences(context).edit();
 
         editor.putBoolean("city_selected",true);
@@ -321,5 +322,6 @@ public class Utility {
         editor.putString("suggestion_uv_txt",suggestion.getUvTxt());
 
         editor.commit();
+        return true;
     }
 }

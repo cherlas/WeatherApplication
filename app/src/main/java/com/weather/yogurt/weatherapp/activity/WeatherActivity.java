@@ -1,6 +1,7 @@
 package com.weather.yogurt.weatherapp.activity;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.weather.yogurt.weatherapp.R;
+import com.weather.yogurt.weatherapp.service.AutoUpdateService;
 import com.weather.yogurt.weatherapp.util.HttpCallbackListener;
 import com.weather.yogurt.weatherapp.util.HttpUtil;
 import com.weather.yogurt.weatherapp.util.Utility;
@@ -30,11 +32,16 @@ public class WeatherActivity extends Activity implements View.OnClickListener{
     private TextView weatherConditionDetailText,hourlyWeatherCondition;
     private Button switchCity,refresh;
     private HttpCallbackListener listener;
+    private ProgressDialog progressDialog;
    // WeatherDB weatherDB=WeatherDB.getInstance(this);
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.weather_layout);
+
+
 
         weatherInfoLayout= (LinearLayout) findViewById(R.id.weather_info_layout);
         cityNameText= (TextView) findViewById(R.id.city_name_title);
@@ -45,7 +52,8 @@ public class WeatherActivity extends Activity implements View.OnClickListener{
         switchCity= (Button) findViewById(R.id.switch_city);
         refresh= (Button) findViewById(R.id.refresh);
 
-        requestAddShow(getIntent().getStringExtra("country_code"));
+        requestAddShow(prefs.getString("basic_city",""));
+
 
         switchCity.setOnClickListener(this);
         refresh.setOnClickListener(this);
@@ -53,7 +61,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener{
     }
 
     /*
-        从sharedPreferences里面取出天气信息,,显示到界面上
+        从sharedPreferences里面取出天气信息,显示到界面上
      */
     private void showWeather(){
         SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
@@ -73,6 +81,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener{
         StringBuilder weatherDetail=new StringBuilder();
         for (int i=0;i<7;i++){
             StringBuilder sb=new StringBuilder();
+            //Log.d("dateI",prefs.getString("date_"+i,""));
             sb.append(prefs.getString("date_"+i,"").substring(5)).append("           ");
             String weaD=prefs.getString("cond_txt_d_"+i,"");
             String weaN=prefs.getString("cond_txt_n_"+i,"");
@@ -105,6 +114,8 @@ public class WeatherActivity extends Activity implements View.OnClickListener{
         weatherDetail.append("紫外线指数:").append(prefs.getString("suggestion_uv_brf","")).append(";  ").append(prefs.getString("suggestion_uv_txt","")).append("\r\n\r\n");
 
         weatherConditionDetailText.setText(weatherDetail);
+        Intent intent=new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 
     @Override
@@ -117,19 +128,30 @@ public class WeatherActivity extends Activity implements View.OnClickListener{
                 break;
             case R.id.refresh:
                 SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(this);
-                Log.d("basic_city",prefs.getString("basic_city",""));
+               // Log.d("basic_city",prefs.getString("basic_city",""));
                 requestAddShow(prefs.getString("basic_city",""));
+                Log.d("refresh","Successful");
                 break;
         }
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         switch (resultCode){
             case RESULT_OK:
                 if (requestCode==1){
-                    //Log.d("countryname",data.getStringExtra("country_name_pinyin"));
-                    requestAddShow(data.getStringExtra("country_name_pinyin"));
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            showProgressDialog();
+                        }
+                    });
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            requestAddShow(data.getStringExtra("country_name_pinyin"));
+                        }
+                    }).start();
                 }
                 break;
             default:
@@ -138,11 +160,36 @@ public class WeatherActivity extends Activity implements View.OnClickListener{
     }
 
     private void requestAddShow(String countryName){
+//        String basicCity=PreferenceManager.getDefaultSharedPreferences(this).getString("basic_city","");
+//        if (!countryName.equals(basicCity)){
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    showProgressDialog();
+                }
+            });
+//        }
+
         listener=new HttpCallbackListener() {
             @Override
             public void onFinish(String result) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //closeProgressDialog();
+                    }
+                });
                 try {
-                    Utility.handleWeatherConditionResponse(WeatherActivity.this,result);
+                    boolean flag=Utility.handleWeatherConditionResponse(WeatherActivity.this,result);
+                    if (flag){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                closeProgressDialog();
+                                showWeather();
+                            }
+                        });
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -154,6 +201,24 @@ public class WeatherActivity extends Activity implements View.OnClickListener{
             }
         };
         HttpUtil.sendHttpRequest("http://apis.baidu.com/heweather/weather/free?city="+countryName,listener,null);
-        showWeather();
+    }
+
+    /*
+       显示进度对话框
+    */
+    private void showProgressDialog() {
+
+        if (progressDialog==null){
+            progressDialog=new ProgressDialog(this);
+            progressDialog.setMessage("正在加载...");
+            progressDialog.setCanceledOnTouchOutside(false);
+        }
+        progressDialog.show();
+    }
+
+    private void closeProgressDialog(){
+        if (progressDialog!=null){
+            progressDialog.dismiss();
+        }
     }
 }

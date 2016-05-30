@@ -162,31 +162,44 @@ public class ChooseAreaActivity extends Activity {
     }
 
     private void queryFromServer() {
-//        boolean result=false;
+        //final boolean flag=false;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                showProgressDialog();
+            }
+        });
         HttpCallbackListener listener=new HttpCallbackListener() {
             @Override
             public void onFinish(String result) {
                 Utility.handleXMLResponse(weatherDB,result);
+
+                runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    closeProgressDialog();
+                    queryProvinces();
+                }
+            });
+
             }
 
             @Override
             public void onError(Exception e) {
+                e.printStackTrace();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         closeProgressDialog();
+
                         Toast.makeText(ChooseAreaActivity.this,"加载失败",Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         };
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                showProgressDialog();
-//            }
-//        });
+
         HttpUtil.sendHttpRequest("http://10.13.4.198/allchina.xml",listener,weatherDB);
+
 //        if (result){
 //            runOnUiThread(new Runnable() {
 //                @Override
