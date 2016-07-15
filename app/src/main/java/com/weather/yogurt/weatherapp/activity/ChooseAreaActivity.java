@@ -198,6 +198,13 @@ public class ChooseAreaActivity extends Activity {
             }
         };
 
+//        AssetManager manager=ChooseAreaActivity.this.getAssets();
+//        try {
+//            InputStream is=manager.open("/assets/allchina.xml");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
         HttpUtil.sendHttpRequest("http://10.13.4.198/allchina.xml",listener,weatherDB);
 
 //        if (result){
